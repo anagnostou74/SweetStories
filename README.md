@@ -5,7 +5,7 @@
 
 <b>Baking App Project</b>
 
-<img src="https://github.com/anagnostou74/SweetStories/blob/master/art/Screenshot_1530553376.png?raw=true" alt="Sweet stories main screen" style="width:500px;height:600px;">
+<img src="https://github.com/anagnostou74/SweetStories/blob/master/art/Screenshot_1530553376.png?raw=true" alt="Sweet stories main screen" style="width:280px;">
 
 <b>Project Overview</b>
 
