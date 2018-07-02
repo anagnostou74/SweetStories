@@ -3,3 +3,8 @@
 /.idea/
 /gradle/
 /app/build/
+/app/app.iml
+SweetStories.iml
+app/app.iml
+gradlew
+gradlew.bat
