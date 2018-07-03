@@ -32,6 +32,7 @@ public class StepsFragment extends Fragment {
     RecyclerView mStepsRV;
 
     public StepsFragment() {
+        setRetainInstance(true);
     }
 
     public void setSteps(List<Steps> steps) {
