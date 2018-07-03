@@ -13,14 +13,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
 import butterknife.BindView;
@@ -29,6 +30,7 @@ import gr.mobap.sweetstories.R;
 
 import static gr.mobap.sweetstories.ui.activities.DetailsActivity.title;
 import static gr.mobap.sweetstories.utilities.Constants.KEY_CURRENT_WINDOW;
+import static gr.mobap.sweetstories.utilities.Constants.KEY_PLAYBACK;
 import static gr.mobap.sweetstories.utilities.Constants.KEY_PLAY_WHEN_READY;
 
 
@@ -43,7 +45,8 @@ public class StepDetailsFragment extends Fragment {
 
     private SimpleExoPlayer mPlayer;
     private String description, video;
-    private long mCurrent;
+    private int mCurrentWindow;
+    private long mPlaybackPosition;
     private boolean mPlayWhenReady;
 
     public StepDetailsFragment() {
@@ -71,7 +74,8 @@ public class StepDetailsFragment extends Fragment {
         }
 
         if (savedInstanceState != null) {
-            mCurrent = savedInstanceState.getLong(KEY_CURRENT_WINDOW);
+            mPlaybackPosition = savedInstanceState.getLong(KEY_CURRENT_WINDOW);
+            mCurrentWindow = savedInstanceState.getInt(KEY_CURRENT_WINDOW);
             mPlayWhenReady = savedInstanceState.getBoolean(KEY_PLAY_WHEN_READY);
         }
 
@@ -86,7 +90,7 @@ public class StepDetailsFragment extends Fragment {
             } else {
                 mVideoPlayer.setVisibility(View.VISIBLE);
                 mStepVideo.setVisibility(View.GONE);
-                setupMediaPlayer();
+                initializePlayer();
             }
         } else {
             mStepVideo.setText(getResources().getText(R.string.no_video));
@@ -99,69 +103,78 @@ public class StepDetailsFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong(KEY_PLAYBACK, mPlaybackPosition);
+        outState.putInt(KEY_CURRENT_WINDOW, mCurrentWindow);
+        outState.putBoolean(KEY_PLAY_WHEN_READY, mPlayWhenReady);
+    }
 
-    private void setupMediaPlayer() {
+    private void initializePlayer() {
         if (mPlayer == null) {
-            TrackSelector trackSelector = new DefaultTrackSelector();
 
-            mPlayer = ExoPlayerFactory.newSimpleInstance(getActivity(), trackSelector);
+            mPlayer = ExoPlayerFactory.newSimpleInstance(
+                    new DefaultRenderersFactory(getContext()),
+                    new DefaultTrackSelector(),
+                    new DefaultLoadControl());
+
             mVideoPlayer.setPlayer(mPlayer);
 
-            String user = Util.getUserAgent(getActivity(), String.valueOf(getResources().getText(R.string.app_name)));
-
-            DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(this.getContext(), user);
-            MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(video));
-
-            mPlayer.prepare(mediaSource);
-            mPlayer.seekTo(mCurrent);
             mPlayer.setPlayWhenReady(mPlayWhenReady);
+            mPlayer.seekTo(mCurrentWindow, mPlaybackPosition);
         }
+        Uri uri = Uri.parse(video);
+        MediaSource mediaSource = buildMediaSource(uri);
+        mPlayer.prepare(mediaSource, true, false);
+
     }
 
-    private void stopPlayer() {
-        if (mPlayer != null) {
-            mPlayer.stop();
-            mPlayer.release();
-            mPlayer = null;
-        }
+    private MediaSource buildMediaSource(Uri uri) {
+        return new ExtractorMediaSource.Factory(
+                new DefaultHttpDataSourceFactory("exoplayer-codelab")).
+                createMediaSource(uri);
     }
-
 
     @Override
     public void onPause() {
         super.onPause();
-        stopPlayer();
+        if (Util.SDK_INT <= 23) {
+            releasePlayer();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (Util.SDK_INT > 23) {
+            releasePlayer();
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (Util.SDK_INT > 23) {
+            initializePlayer();
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        setupMediaPlayer();
+        if ((Util.SDK_INT <= 23 || mPlayer == null)) {
+            initializePlayer();
+        }
     }
 
     private void releasePlayer() {
         if (mPlayer != null) {
+            mPlaybackPosition = mPlayer.getCurrentPosition();
+            mCurrentWindow = mPlayer.getCurrentWindowIndex();
             mPlayWhenReady = mPlayer.getPlayWhenReady();
-            mCurrent = mPlayer.getCurrentPosition();
-
-            mPlayer.stop();
             mPlayer.release();
             mPlayer = null;
         }
-    }
-
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        releasePlayer();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        outState.putLong(KEY_CURRENT_WINDOW, mCurrent);
-        outState.putBoolean(KEY_PLAY_WHEN_READY, mPlayWhenReady);
     }
 }

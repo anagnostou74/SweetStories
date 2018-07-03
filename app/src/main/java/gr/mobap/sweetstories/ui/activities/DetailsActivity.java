@@ -81,8 +81,16 @@ public class DetailsActivity extends AppCompatActivity
                     .replace(R.id.details_container, ingredientDetailsFragment)
                     .attach(ingredientDetailsFragment)
                     .commit();
-
+        } else {
+            stepDetailsFragment = (StepDetailsFragment) getSupportFragmentManager()
+                    .getFragment(savedInstanceState, "myFragmentName");
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        getSupportFragmentManager().putFragment(outState, "myFragmentName", stepDetailsFragment);
     }
 
     @Override
