@@ -3,9 +3,7 @@ package gr.mobap.sweetstories.ui.activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.FrameLayout;
@@ -99,7 +97,6 @@ public class DetailsActivity extends AppCompatActivity
             stepDetailsFragment.setDescription(description);
             fragmentManager.beginTransaction()
                     .replace(R.id.details_container, stepDetailsFragment)
-                    .detach(stepDetailsFragment)
                     .attach(stepDetailsFragment)
                     .commit();
         }
