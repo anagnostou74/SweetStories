@@ -1,6 +1,5 @@
 package gr.mobap.sweetstories.ui.fragments;
 
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -52,6 +51,12 @@ public class StepDetailsFragment extends Fragment {
     public StepDetailsFragment() {
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -64,7 +69,6 @@ public class StepDetailsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        setRetainInstance(true);
         View view = inflater.inflate(R.layout.fragment_step_details, container, false);
         ButterKnife.bind(this, view);
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
@@ -116,7 +120,7 @@ public class StepDetailsFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putLong(KEY_PLAYBACK, mPlaybackPosition);
         outState.putInt(KEY_CURRENT_WINDOW, mCurrentWindow);

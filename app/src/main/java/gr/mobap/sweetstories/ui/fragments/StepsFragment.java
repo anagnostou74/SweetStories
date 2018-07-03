@@ -32,7 +32,7 @@ public class StepsFragment extends Fragment {
     RecyclerView mStepsRV;
 
     public StepsFragment() {
-        setRetainInstance(true);
+
     }
 
     public void setSteps(List<Steps> steps) {
@@ -42,6 +42,13 @@ public class StepsFragment extends Fragment {
     private List<Steps> steps;
     StepsListAdapter adapter;
     OnStepClickListener onStepClickListener;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
 
     @Nullable
     @Override
